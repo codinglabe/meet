@@ -6,7 +6,7 @@ const next = require('next');
 
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || '0.0.0.0';
-const dev = process.env.NODE_ENV !== 'production';
+const dev = !process.argv.includes('--production') && process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev, hostname: HOST, port: PORT });
 const nextHandler = nextApp.getRequestHandler();
 

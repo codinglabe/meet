@@ -21,6 +21,8 @@ npm install
 npm run dev
 ```
 
+On Windows, use the same command. The scripts are cross-platform; no `NODE_ENV=...` syntax is required.
+
 Then open:
 
 ```text

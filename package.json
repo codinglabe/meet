@@ -4,9 +4,9 @@
   "private": true,
   "description": "Next.js custom WebRTC meeting MVP with custom WebSocket signaling",
   "scripts": {
-    "dev": "NODE_ENV=development node server.js",
+    "dev": "node server.js",
     "build": "next build",
-    "start": "NODE_ENV=production node server.js",
+    "start": "node server.js --production",
     "check": "node --check server.js"
   },
   "dependencies": {
