@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kreo Meet</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <section id="join" class="card join">
+      <div class="brand">Kreo Meet</div>
+      <h1>Custom browser meeting MVP</h1>
+      <p>No npm dependencies. Custom Node HTTP + custom WebSocket signaling + browser WebRTC.</p>
+      <label>Your name <input id="name" placeholder="Riyad" autocomplete="name" /></label>
+      <label>Room <input id="room" placeholder="main-room" /></label>
+      <label>Role
+        <select id="role"><option value="host">Host / speaker</option><option value="attendee">Attendee / watch only</option></select>
+      </label>
+      <button id="joinBtn">Join meeting</button>
+      <small>Large-room production mode should use speaker WebRTC + audience HLS. This MVP proves rooms, signaling, chat, attendance, screen share, and peer video.</small>
+    </section>
+
+    <section id="app" class="hidden">
+      <header class="topbar">
+        <div><strong>Kreo Meet</strong><span id="roomLabel"></span></div>
+        <div class="actions">
+          <button id="copyLink">Copy link</button>
+          <button id="mic">Mute mic</button>
+          <button id="cam">Stop cam</button>
+          <button id="screen">Share screen</button>
+          <button id="raiseHand">Raise hand</button>
+          <button id="leave" class="danger">Leave</button>
+        </div>
+      </header>
+      <div class="grid">
+        <section class="stage">
+          <div id="videos" class="videos"></div>
+        </section>
+        <aside class="side">
+          <h2>Participants <span id="count">0</span></h2>
+          <ul id="people"></ul>
+          <h2>Chat</h2>
+          <div id="chatLog" class="chatlog"></div>
+          <form id="chatForm"><input id="chatInput" placeholder="Message" /><button>Send</button></form>
+          <a id="attendance" target="_blank">Attendance JSON</a>
+          <a id="attendanceCsv" target="_blank">Attendance CSV</a>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
