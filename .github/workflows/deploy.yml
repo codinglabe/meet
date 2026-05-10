@@ -36,6 +36,8 @@ jobs:
             cd "$APP_DIR"
             git fetch origin main
             git reset --hard origin/main
+            npm ci
+            npm run build
             bash scripts/stop.sh || true
             bash scripts/start.sh
             for i in {1..20}; do

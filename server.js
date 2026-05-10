@@ -1,72 +1,65 @@
 'use strict';
 
 const http = require('http');
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
+const next = require('next');
 
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || '0.0.0.0';
-const PUBLIC_DIR = path.join(__dirname, 'public');
+const dev = process.env.NODE_ENV !== 'production';
+const nextApp = next({ dev, hostname: HOST, port: PORT });
+const nextHandler = nextApp.getRequestHandler();
+
 const rooms = new Map(); // roomId -> Map(socketId -> client)
 const attendance = new Map(); // roomId -> Map(socketId -> record)
-
-function contentType(file) {
-  if (file.endsWith('.html')) return 'text/html; charset=utf-8';
-  if (file.endsWith('.css')) return 'text/css; charset=utf-8';
-  if (file.endsWith('.js')) return 'application/javascript; charset=utf-8';
-  if (file.endsWith('.json')) return 'application/json; charset=utf-8';
-  if (file.endsWith('.svg')) return 'image/svg+xml';
-  return 'application/octet-stream';
-}
 
 function safeRoom(room) {
   return String(room || 'lobby').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || 'lobby';
 }
 
-const server = http.createServer((req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  if (url.pathname === '/health') {
-    res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, rooms: rooms.size, time: new Date().toISOString() }));
-    return;
-  }
-  if (url.pathname.startsWith('/api/attendance/')) {
-    const parts = url.pathname.split('/').filter(Boolean);
-    const roomId = safeRoom(parts[2]);
-    const format = parts[3] || 'json';
-    const records = [...(attendance.get(roomId) || new Map()).values()].map(r => ({
-      ...r,
-      leftAt: r.leftAt || null,
-      durationSeconds: Math.round(((r.leftAt ? Date.parse(r.leftAt) : Date.now()) - Date.parse(r.joinedAt)) / 1000)
-    }));
-    if (format === 'csv') {
-      const esc = v => '"' + String(v ?? '').replaceAll('\"', '\"\"') + '"';
-      const head = ['id','name','role','joinedAt','leftAt','durationSeconds','userAgent'];
-      const csv = [head.join(','), ...records.map(r => head.map(k => esc(r[k])).join(','))].join('\n');
-      res.writeHead(200, { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': `attachment; filename=attendance-${roomId}.csv` });
-      res.end(csv);
-    } else {
+nextApp.prepare().then(() => {
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    if (url.pathname === '/health') {
       res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ roomId, count: records.length, records }, null, 2));
+      res.end(JSON.stringify({ ok: true, framework: 'nextjs', rooms: rooms.size, time: new Date().toISOString() }));
+      return;
     }
-    return;
-  }
-
-  let file = url.pathname === '/' ? '/index.html' : url.pathname;
-  if (file === '/room') file = '/index.html';
-  const full = path.normalize(path.join(PUBLIC_DIR, file));
-  if (!full.startsWith(PUBLIC_DIR)) {
-    res.writeHead(403); res.end('Forbidden'); return;
-  }
-  fs.readFile(full, (err, data) => {
-    if (err) { res.writeHead(404); res.end('Not found'); return; }
-    res.writeHead(200, { 'content-type': contentType(full) });
-    res.end(data);
+    if (url.pathname.startsWith('/api/attendance/')) {
+      serveAttendance(url, res);
+      return;
+    }
+    nextHandler(req, res);
   });
+
+  server.on('upgrade', (req, socket) => handleUpgrade(req, socket));
+  server.listen(PORT, HOST, () => console.log(`Kreo Meet Next.js running on http://${HOST}:${PORT}`));
 });
 
-server.on('upgrade', (req, socket) => {
+function serveAttendance(url, res) {
+  const parts = url.pathname.split('/').filter(Boolean);
+  const roomId = safeRoom(parts[2]);
+  const format = parts[3] || 'json';
+  const records = [...(attendance.get(roomId) || new Map()).values()].map(r => ({
+    ...r,
+    leftAt: r.leftAt || null,
+    durationSeconds: Math.round(((r.leftAt ? Date.parse(r.leftAt) : Date.now()) - Date.parse(r.joinedAt)) / 1000)
+  }));
+
+  if (format === 'csv') {
+    const esc = v => '"' + String(v ?? '').replaceAll('"', '""') + '"';
+    const head = ['id', 'name', 'role', 'joinedAt', 'leftAt', 'durationSeconds', 'userAgent'];
+    const csv = [head.join(','), ...records.map(r => head.map(k => esc(r[k])).join(','))].join('\n');
+    res.writeHead(200, { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': `attachment; filename=attendance-${roomId}.csv` });
+    res.end(csv);
+    return;
+  }
+
+  res.writeHead(200, { 'content-type': 'application/json' });
+  res.end(JSON.stringify({ roomId, count: records.length, records }, null, 2));
+}
+
+function handleUpgrade(req, socket) {
   if (req.headers.upgrade?.toLowerCase() !== 'websocket') return socket.destroy();
   const key = req.headers['sec-websocket-key'];
   if (!key) return socket.destroy();
@@ -82,7 +75,7 @@ server.on('upgrade', (req, socket) => {
   ].join('\r\n'));
 
   const id = crypto.randomBytes(8).toString('hex');
-  const client = { id, socket, roomId: null, name: 'Guest', role: 'attendee', alive: true, buffer: Buffer.alloc(0) };
+  const client = { id, socket, roomId: null, name: 'Guest', role: 'attendee', buffer: Buffer.alloc(0) };
 
   socket.on('data', chunk => {
     client.buffer = Buffer.concat([client.buffer, chunk]);
@@ -95,7 +88,7 @@ server.on('upgrade', (req, socket) => {
   });
   socket.on('close', () => leave(client));
   socket.on('error', () => leave(client));
-});
+}
 
 function readFrame(client) {
   const b = client.buffer;
@@ -166,7 +159,6 @@ function handleMessage(client, raw) {
   }
   if (msg.type === 'raise-hand') {
     broadcast(client.roomId, { type: 'raise-hand', from: client.id, name: client.name, at: new Date().toISOString() });
-    return;
   }
 }
 function leave(client) {
@@ -178,5 +170,3 @@ function leave(client) {
   if (rooms.get(roomId)?.size === 0) rooms.delete(roomId);
   client.roomId = null;
 }
-
-server.listen(PORT, HOST, () => console.log(`Kreo Meet running on http://${HOST}:${PORT}`));

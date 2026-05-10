@@ -25,6 +25,6 @@ if [[ -n "$old_port_pids" ]]; then
   done
 fi
 
-HOST=127.0.0.1 PORT=8080 nohup /usr/bin/node server.js >> "$LOG_FILE" 2>&1 &
+HOST=127.0.0.1 PORT=8080 NODE_ENV=production nohup /usr/bin/node server.js >> "$LOG_FILE" 2>&1 &
 echo $! > "$PID_FILE"
 echo "Started Kreo Meet: pid $(cat "$PID_FILE")"

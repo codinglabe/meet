@@ -1,23 +1,24 @@
 # Kreo Meet
 
-Custom no-package browser meeting MVP.
+A modern Next.js meeting application with custom WebRTC signaling.
 
 ## Features
 
-- Custom Node.js HTTP server
-- Custom WebSocket signaling
+- Next.js App Router UI
+- Custom Node.js HTTP + WebSocket signaling server
 - Browser WebRTC video/audio rooms
 - Host/speaker and attendee/watch-only roles
 - Chat
 - Screen share
 - Raise hand
 - Attendance JSON + CSV export
-- HTTPS-ready behind Caddy/reverse proxy
+- GitHub Actions auto-deploy to EC2
 
 ## Run locally
 
 ```bash
-npm start
+npm install
+npm run dev
 ```
 
 Then open:
@@ -26,7 +27,21 @@ Then open:
 http://127.0.0.1:8080
 ```
 
-## Production notes
+or:
+
+```text
+http://localhost:8080
+```
+
+## Production
+
+Build and start:
+
+```bash
+npm ci
+npm run build
+npm start
+```
 
 Camera/mic requires HTTPS in browsers. Use a domain with HTTPS, for example:
 

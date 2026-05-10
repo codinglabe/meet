@@ -32,6 +32,8 @@ cd "$APP_DIR"
 
   echo "Deploying new commit..."
   git pull --ff-only origin main
+  npm ci
+  npm run build
   "$APP_DIR/scripts/stop.sh" || true
   "$APP_DIR/scripts/start.sh"
   curl -fsS http://127.0.0.1:8080/health

@@ -1,9 +1,17 @@
 {
   "name": "kreo-meet-custom",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "No-dependency custom WebRTC meeting MVP with custom WebSocket signaling",
+  "description": "Next.js custom WebRTC meeting MVP with custom WebSocket signaling",
   "scripts": {
-    "start": "node server.js"
+    "dev": "NODE_ENV=development node server.js",
+    "build": "next build",
+    "start": "NODE_ENV=production node server.js",
+    "check": "node --check server.js"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
   }
 }
