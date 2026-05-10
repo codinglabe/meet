@@ -10,6 +10,8 @@
     "check": "node --check server.js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.6",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

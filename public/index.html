@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kreo Meet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -22,10 +25,10 @@
         <p class="lead">A custom no-package WebRTC meeting MVP with host rooms, watch-only attendees, chat, screen sharing, raise hand, and attendance export.</p>
 
         <div class="feature-grid" aria-label="Features">
-          <div>🎥 Video rooms</div>
-          <div>🧑‍🏫 Webinar mode</div>
-          <div>💬 Live chat</div>
-          <div>📊 Attendance CSV</div>
+          <div>Video rooms</div>
+          <div>Webinar mode</div>
+          <div>Live chat</div>
+          <div>Attendance CSV</div>
         </div>
       </div>
 
@@ -44,52 +47,109 @@
       </form>
     </section>
 
-    <section id="app" class="hidden app-shell">
-      <header class="topbar">
-        <div class="meeting-id">
-          <div class="brand-mark small">KM</div>
-          <div><strong>Kreo Meet</strong><span id="roomLabel"></span></div>
+    <section id="app" class="hidden meet-app" aria-label="Meeting">
+      <header class="meet-top">
+        <div class="meet-top__left">
+          <button type="button" class="meet-title-chip" id="meetingMenuBtn" aria-haspopup="true" aria-expanded="false">
+            <span class="meet-shield" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <span class="meet-title-text" id="meetingTitle">Product Team Sync</span>
+            <svg class="meet-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="meet-menu-pop" id="meetingMenuPop" hidden>
+            <p class="meet-menu-room"><span id="roomLabelPop"></span></p>
+            <button type="button" class="meet-menu-item" id="copyLink">Copy invite link</button>
+            <a class="meet-menu-item" id="attendance" target="_blank" rel="noopener">Attendance JSON</a>
+            <a class="meet-menu-item" id="attendanceCsv" target="_blank" rel="noopener">Attendance CSV</a>
+          </div>
         </div>
-        <div class="status-pill" id="statusPill">Connecting…</div>
-        <div class="actions">
-          <button id="copyLink" class="secondary">🔗 Copy link</button>
-          <button id="mic" class="secondary">🎙️ Mute</button>
-          <button id="cam" class="secondary">📷 Stop cam</button>
-          <button id="screen" class="secondary">🖥️ Share</button>
-          <button id="raiseHand" class="secondary">✋ Raise hand</button>
-          <button id="leave" class="danger">Leave</button>
+        <div class="meet-top__center">
+          <span class="meet-recording"><span class="meet-rec-dot" aria-hidden="true"></span> Recording</span>
+          <span class="meet-live-tag">LIVE</span>
+          <button type="button" class="meet-youtube-chip" aria-disabled="true">on YouTube <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        </div>
+        <div class="meet-top__right">
+          <button type="button" class="meet-icon-btn" id="btnInfo" aria-label="Meeting info" title="Info">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          </button>
+          <button type="button" class="meet-icon-btn meet-icon-btn--count" id="btnPeopleHeader" aria-label="Participants" title="Participants">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span class="meet-badge-num" id="countHeader">1</span>
+          </button>
+          <button type="button" class="meet-icon-btn" id="btnChatHeader" aria-label="Chat" title="Chat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </button>
+          <button type="button" class="meet-icon-btn" aria-label="Gallery view" title="Layout">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button type="button" class="meet-view-btn" id="btnGalleryView">View</button>
         </div>
       </header>
 
-      <div class="grid">
-        <section class="stage">
-          <div class="stage-head">
-            <div>
-              <h2>Live room</h2>
-              <p>Speakers appear here. Attendees can watch, chat, and raise hand.</p>
-            </div>
+      <div class="meet-body">
+        <div class="meet-stage">
+          <div id="videos" class="meet-videos"></div>
+        </div>
+
+        <aside id="drawerChat" class="meet-drawer meet-drawer--chat" aria-hidden="true">
+          <div class="meet-drawer__head">
+            <h2>Chat</h2>
+            <button type="button" class="meet-drawer__close" id="closeChatDrawer" aria-label="Close chat">&times;</button>
           </div>
-          <div id="videos" class="videos"></div>
-        </section>
+          <div id="chatLog" class="chatlog"></div>
+          <form id="chatForm" class="meet-chat-form"><input id="chatInput" placeholder="Message everyone" autocomplete="off" /><button type="submit">Send</button></form>
+        </aside>
 
-        <aside class="side">
-          <section class="panel">
-            <div class="panel-title"><h2>Participants</h2><span id="count">0</span></div>
-            <ul id="people"></ul>
-          </section>
-
-          <section class="panel chat-panel">
-            <div class="panel-title"><h2>Chat</h2></div>
-            <div id="chatLog" class="chatlog"></div>
-            <form id="chatForm"><input id="chatInput" placeholder="Message everyone" /><button>Send</button></form>
-          </section>
-
-          <section class="panel exports">
-            <a id="attendance" target="_blank">View attendance JSON</a>
-            <a id="attendanceCsv" target="_blank">Download attendance CSV</a>
-          </section>
+        <aside id="drawerPeople" class="meet-drawer meet-drawer--people" aria-hidden="true">
+          <div class="meet-drawer__head">
+            <h2>Participants</h2>
+            <span class="meet-drawer__count" id="countDrawer">0</span>
+            <button type="button" class="meet-drawer__close" id="closePeopleDrawer" aria-label="Close participants">&times;</button>
+          </div>
+          <ul id="people" class="meet-people-list"></ul>
         </aside>
       </div>
+
+      <footer class="meet-bar">
+        <div class="meet-bar__center">
+          <button type="button" class="meet-ctrl" id="mic">
+            <span class="meet-ctrl__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg><span class="meet-ctrl__chev" aria-hidden="true"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg></span></span>
+            <span class="meet-ctrl__label" data-on="Mute" data-off="Unmute">Mute</span>
+          </button>
+          <button type="button" class="meet-ctrl" id="cam">
+            <span class="meet-ctrl__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><span class="meet-ctrl__chev" aria-hidden="true"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg></span></span>
+            <span class="meet-ctrl__label" data-on="Stop video" data-off="Start video">Stop video</span>
+          </button>
+          <button type="button" class="meet-ctrl meet-ctrl--ghost" id="btnSecurity" title="Security">
+            <span class="meet-ctrl__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            <span class="meet-ctrl__label">Security</span>
+          </button>
+          <button type="button" class="meet-ctrl" id="btnPeopleFooter">
+            <span class="meet-ctrl__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="meet-ctrl__chev" aria-hidden="true"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg></span></span>
+            <span class="meet-ctrl__label">Participants <span class="meet-ctrl__num" id="countFooter">1</span></span>
+          </button>
+          <button type="button" class="meet-ctrl" id="btnChatFooter">
+            <span class="meet-ctrl__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+            <span class="meet-ctrl__label">Chat</span>
+          </button>
+          <button type="button" class="meet-ctrl meet-ctrl--share" id="screen">
+            <span class="meet-ctrl__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><span class="meet-ctrl__chev" aria-hidden="true"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg></span></span>
+            <span class="meet-ctrl__label">Share screen</span>
+          </button>
+          <button type="button" class="meet-ctrl meet-ctrl--ghost" id="btnRecord" title="Record">
+            <span class="meet-ctrl__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
+            <span class="meet-ctrl__label">Record</span>
+          </button>
+          <button type="button" class="meet-ctrl meet-ctrl--ghost" id="raiseHand" title="Reactions">
+            <span class="meet-ctrl__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg></span>
+            <span class="meet-ctrl__label">Reactions</span>
+          </button>
+        </div>
+        <button type="button" class="meet-leave" id="leave">Leave</button>
+      </footer>
+
+      <div id="meetStatus" class="meet-status-fab" role="status">Connecting…</div>
     </section>
   </main>
   <script src="/app.js"></script>

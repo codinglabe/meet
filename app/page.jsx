@@ -1,5 +1,5 @@
-import MeetingApp from '@/components/MeetingApp';
+import HomeClient from '@/components/HomeClient';
 
 export default function HomePage() {
-  return <MeetingApp />;
+  return <HomeClient />;
 }
