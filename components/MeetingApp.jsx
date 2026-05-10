@@ -224,7 +224,7 @@ export default function MeetingApp({ initialRoom = 'main-room', autoRoom = false
         addStream('local', localStreamRef.current, `${displayName} (you)`, true);
       }
 
-      const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
+      const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`);
       wsRef.current = ws;
       ws.onopen = () => {
         setStatus('Live');

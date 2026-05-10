@@ -7,9 +7,9 @@ const next = require('next');
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || '0.0.0.0';
 const dev = !process.argv.includes('--production') && process.env.NODE_ENV !== 'production';
-const nextApp = next({ dev, hostname: HOST, port: PORT });
-const nextHandler = nextApp.getRequestHandler();
-
+let nextHandler;
+let nextUpgradeHandler;
+let server;
 const rooms = new Map(); // roomId -> Map(socketId -> client)
 const attendance = new Map(); // roomId -> Map(socketId -> record)
 
@@ -17,8 +17,12 @@ function safeRoom(room) {
   return String(room || 'lobby').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || 'lobby';
 }
 
-nextApp.prepare().then(() => {
-  const server = http.createServer((req, res) => {
+server = http.createServer((req, res) => {
+  if (!nextHandler) {
+    res.writeHead(503, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('Server starting');
+    return;
+  }
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname === '/health') {
       res.writeHead(200, { 'content-type': 'application/json' });
@@ -30,9 +34,18 @@ nextApp.prepare().then(() => {
       return;
     }
     nextHandler(req, res);
-  });
+});
 
-  server.on('upgrade', (req, socket) => handleUpgrade(req, socket));
+const preparedNextApp = next({ dev, hostname: HOST, port: PORT, httpServer: server });
+
+preparedNextApp.prepare().then(() => {
+  nextHandler = preparedNextApp.getRequestHandler();
+  nextUpgradeHandler = preparedNextApp.getUpgradeHandler();
+  server.on('upgrade', (req, socket, head) => {
+    const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+    if (url.pathname === '/ws') return handleUpgrade(req, socket);
+    return nextUpgradeHandler(req, socket, head);
+  });
   server.listen(PORT, HOST, () => console.log(`Kreo Meet Next.js running on http://${HOST}:${PORT}`));
 });
 
