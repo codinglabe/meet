@@ -11,14 +11,20 @@ const localVideoId = 'local';
 
 const rtcConfig = { iceServers: [] }; // Fully custom/no external STUN. Same-network/public-host tests work best; custom STUN/TURN is a future production component.
 
-$('#joinBtn').onclick = join;
+$('#joinForm').onsubmit = e => { e.preventDefault(); join(); };
 $('#leave').onclick = () => location.href = '/';
-$('#copyLink').onclick = async () => { await navigator.clipboard.writeText(location.href); $('#copyLink').textContent = 'Copied'; setTimeout(()=>$('#copyLink').textContent='Copy link',1200); };
-$('#mic').onclick = () => { micOn = !micOn; localStream?.getAudioTracks().forEach(t => t.enabled = micOn); $('#mic').textContent = micOn ? 'Mute mic' : 'Unmute mic'; };
-$('#cam').onclick = () => { camOn = !camOn; localStream?.getVideoTracks().forEach(t => t.enabled = camOn); $('#cam').textContent = camOn ? 'Stop cam' : 'Start cam'; };
+$('#copyLink').onclick = async () => { await navigator.clipboard.writeText(location.href); $('#copyLink').textContent = '✅ Copied'; setTimeout(()=>$('#copyLink').textContent='🔗 Copy link',1200); };
+$('#mic').onclick = () => { micOn = !micOn; localStream?.getAudioTracks().forEach(t => t.enabled = micOn); $('#mic').textContent = micOn ? '🎙️ Mute' : '🔇 Unmute'; };
+$('#cam').onclick = () => { camOn = !camOn; localStream?.getVideoTracks().forEach(t => t.enabled = camOn); $('#cam').textContent = camOn ? '📷 Stop cam' : '📷 Start cam'; };
 $('#screen').onclick = shareScreen;
 $('#raiseHand').onclick = () => { send({type:'raise-hand'}); addChat('System', 'You raised your hand.'); };
 $('#chatForm').onsubmit = e => { e.preventDefault(); const text = $('#chatInput').value.trim(); if (text) { send({type:'chat', text}); addChat('Me', text); $('#chatInput').value=''; } };
+
+if (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+  $('#secureHint').textContent = 'Camera ready';
+} else {
+  $('#secureHint').textContent = 'Use HTTPS for camera/mic';
+}
 
 async function join() {
   roomId = ($('#room').value || 'main-room').replace(/[^a-zA-Z0-9_-]/g,'') || 'main-room';
@@ -46,9 +52,15 @@ async function join() {
     addChat('System', 'Joined as watch-only attendee. Use Raise hand to ask the host to promote you later.');
   }
   ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
-  ws.onopen = () => send({ type:'join', roomId, name, role, userAgent: navigator.userAgent });
+  ws.onopen = () => { setStatus('Live', 'live'); send({ type:'join', roomId, name, role, userAgent: navigator.userAgent }); };
   ws.onmessage = ev => handle(JSON.parse(ev.data));
-  ws.onclose = () => addChat('System', 'Disconnected from signaling server.');
+  ws.onclose = () => { setStatus('Disconnected', 'offline'); addChat('System', 'Disconnected from signaling server.'); };
+}
+function setStatus(text, mode = '') {
+  const pill = $('#statusPill');
+  if (!pill) return;
+  pill.textContent = text;
+  pill.className = `status-pill ${mode}`.trim();
 }
 function send(obj){ ws?.readyState === WebSocket.OPEN && ws.send(JSON.stringify(obj)); }
 async function handle(msg) {

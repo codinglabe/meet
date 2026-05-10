@@ -8,43 +8,86 @@
 </head>
 <body>
   <main class="shell">
-    <section id="join" class="card join">
-      <div class="brand">Kreo Meet</div>
-      <h1>Custom browser meeting MVP</h1>
-      <p>No npm dependencies. Custom Node HTTP + custom WebSocket signaling + browser WebRTC.</p>
-      <label>Your name <input id="name" placeholder="Riyad" autocomplete="name" /></label>
-      <label>Room <input id="room" placeholder="main-room" /></label>
-      <label>Role
-        <select id="role"><option value="host">Host / speaker</option><option value="attendee">Attendee / watch only</option></select>
-      </label>
-      <button id="joinBtn">Join meeting</button>
-      <small>Large-room production mode should use speaker WebRTC + audience HLS. This MVP proves rooms, signaling, chat, attendance, screen share, and peer video.</small>
+    <section id="join" class="join-screen">
+      <div class="hero-card">
+        <div class="brand-row">
+          <div class="brand-mark">KM</div>
+          <div>
+            <div class="brand">Kreo Meet</div>
+            <div class="subtle">Custom video meetings</div>
+          </div>
+        </div>
+
+        <h1>Meet, teach, stream, and track attendance.</h1>
+        <p class="lead">A custom no-package WebRTC meeting MVP with host rooms, watch-only attendees, chat, screen sharing, raise hand, and attendance export.</p>
+
+        <div class="feature-grid" aria-label="Features">
+          <div>🎥 Video rooms</div>
+          <div>🧑‍🏫 Webinar mode</div>
+          <div>💬 Live chat</div>
+          <div>📊 Attendance CSV</div>
+        </div>
+      </div>
+
+      <form class="card join-card" id="joinForm">
+        <div class="form-title">
+          <span>Join meeting</span>
+          <small id="secureHint">Secure connection recommended</small>
+        </div>
+        <label>Your name <input id="name" placeholder="Riyad" autocomplete="name" /></label>
+        <label>Room <input id="room" placeholder="main-room" /></label>
+        <label>Role
+          <select id="role"><option value="host">Host / speaker</option><option value="attendee">Attendee / watch only</option></select>
+        </label>
+        <button id="joinBtn" class="primary" type="submit">Join meeting</button>
+        <small class="note">For camera/mic, open with HTTPS: <strong>https://meet.believeinunity.org</strong></small>
+      </form>
     </section>
 
-    <section id="app" class="hidden">
+    <section id="app" class="hidden app-shell">
       <header class="topbar">
-        <div><strong>Kreo Meet</strong><span id="roomLabel"></span></div>
+        <div class="meeting-id">
+          <div class="brand-mark small">KM</div>
+          <div><strong>Kreo Meet</strong><span id="roomLabel"></span></div>
+        </div>
+        <div class="status-pill" id="statusPill">Connecting…</div>
         <div class="actions">
-          <button id="copyLink">Copy link</button>
-          <button id="mic">Mute mic</button>
-          <button id="cam">Stop cam</button>
-          <button id="screen">Share screen</button>
-          <button id="raiseHand">Raise hand</button>
+          <button id="copyLink" class="secondary">🔗 Copy link</button>
+          <button id="mic" class="secondary">🎙️ Mute</button>
+          <button id="cam" class="secondary">📷 Stop cam</button>
+          <button id="screen" class="secondary">🖥️ Share</button>
+          <button id="raiseHand" class="secondary">✋ Raise hand</button>
           <button id="leave" class="danger">Leave</button>
         </div>
       </header>
+
       <div class="grid">
         <section class="stage">
+          <div class="stage-head">
+            <div>
+              <h2>Live room</h2>
+              <p>Speakers appear here. Attendees can watch, chat, and raise hand.</p>
+            </div>
+          </div>
           <div id="videos" class="videos"></div>
         </section>
+
         <aside class="side">
-          <h2>Participants <span id="count">0</span></h2>
-          <ul id="people"></ul>
-          <h2>Chat</h2>
-          <div id="chatLog" class="chatlog"></div>
-          <form id="chatForm"><input id="chatInput" placeholder="Message" /><button>Send</button></form>
-          <a id="attendance" target="_blank">Attendance JSON</a>
-          <a id="attendanceCsv" target="_blank">Attendance CSV</a>
+          <section class="panel">
+            <div class="panel-title"><h2>Participants</h2><span id="count">0</span></div>
+            <ul id="people"></ul>
+          </section>
+
+          <section class="panel chat-panel">
+            <div class="panel-title"><h2>Chat</h2></div>
+            <div id="chatLog" class="chatlog"></div>
+            <form id="chatForm"><input id="chatInput" placeholder="Message everyone" /><button>Send</button></form>
+          </section>
+
+          <section class="panel exports">
+            <a id="attendance" target="_blank">View attendance JSON</a>
+            <a id="attendanceCsv" target="_blank">Download attendance CSV</a>
+          </section>
         </aside>
       </div>
     </section>
